@@ -4,48 +4,54 @@ namespace Solo;
 
 class Paginator
 {
-    /** URL pattern with {id} placeholder as a page number */
-    private string $urlPattern;
-    /** Total number of items  */
+    /** @var int Total number of items */
     private int $totalItems;
-    /** Number of items per page */
+
+    /** @var int Number of items per page */
     private int $itemsPerPage;
-    /** Current page number */
+
+    /** @var int Current page number */
     private int $currentPage;
-    /** Max links in pagination */
+
+    /** @var int Max links in pagination */
     private int $maxLinks;
 
+    /** @var array Query parameters for URL */
+    private array $queryParams;
+
     public function get(
-        string $urlPattern,
-        int    $totalItems,
-        int    $itemsPerPage = 50,
-        int    $currentPage = 1,
-        int    $maxLinks = 3
+        array $queryParams,
+        int   $totalItems,
+        int   $itemsPerPage = 50,
+        int   $currentPage = 1,
+        int   $maxLinks = 3
     ): array
     {
-        $this->urlPattern = $urlPattern;
+        $this->queryParams = $queryParams;
         $this->totalItems = $totalItems;
         $this->itemsPerPage = $itemsPerPage;
         $this->currentPage = $currentPage;
         $this->maxLinks = max(3, $maxLinks);
 
-        $pagination['paginationLinks'] = $this->generatePaginationLinks();
-        $pagination['hasPreviousPage'] = $this->hasPreviousPage();
-        $pagination['hasNextPage'] = $this->hasNextPage();
-        $pagination['previousPageUrl'] = $this->getPreviousPageUrl();
-        $pagination['nextPageUrl'] = $this->getNextPageUrl();
-        $pagination['totalPages'] = $this->calculateTotalPages();
-        return $pagination;
+        return [
+            'paginationLinks' => $this->generatePaginationLinks(),
+            'hasPreviousPage' => $this->hasPreviousPage(),
+            'hasNextPage' => $this->hasNextPage(),
+            'previousPageUrl' => $this->getPreviousPageUrl(),
+            'nextPageUrl' => $this->getNextPageUrl(),
+            'totalPages' => $this->calculateTotalPages(),
+        ];
     }
 
-    private function calculateTotalPages(): float
+    private function calculateTotalPages(): int
     {
-        return ceil($this->totalItems / $this->itemsPerPage);
+        return (int)ceil($this->totalItems / $this->itemsPerPage);
     }
 
-    private function getPageUrl($page): string
+    private function getPageUrl(int $page): string
     {
-        return str_replace('{id}', (string)$page, $this->urlPattern);
+        $queryString = http_build_query(array_merge($this->queryParams, ['page' => $page]));
+        return '?' . $queryString;
     }
 
     private function generatePaginationLinks(): array
@@ -61,7 +67,7 @@ class Paginator
             return $paginationLinks;
         }
 
-        $halfMaxLinks = floor($this->maxLinks / 2);
+        $halfMaxLinks = intdiv($this->maxLinks, 2);
         $start = max(1, $currentPage - $halfMaxLinks);
         $end = min($totalPages, $start + $this->maxLinks - 1);
 
@@ -86,12 +92,12 @@ class Paginator
         return $paginationLinks;
     }
 
-    private function createPaginationLink($page): array
+    private function createPaginationLink(int $page): array
     {
         return [
             'page' => $page,
             'url' => $this->getPageUrl($page),
-            'isCurrent' => ($page == $this->currentPage),
+            'isCurrent' => ($page === $this->currentPage),
         ];
     }
 
