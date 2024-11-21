@@ -22,15 +22,15 @@ class Paginator
     public function get(
         array $queryParams,
         int   $totalItems,
-        int   $itemsPerPage = 50,
         int   $currentPage = 1,
+        int   $itemsPerPage = 50,
         int   $maxLinks = 3
     ): array
     {
         $this->queryParams = $queryParams;
         $this->totalItems = $totalItems;
-        $this->itemsPerPage = $itemsPerPage;
         $this->currentPage = $currentPage;
+        $this->itemsPerPage = $itemsPerPage;
         $this->maxLinks = max(3, $maxLinks);
 
         return [
@@ -40,6 +40,8 @@ class Paginator
             'previousPageUrl' => $this->getPreviousPageUrl(),
             'nextPageUrl' => $this->getNextPageUrl(),
             'totalPages' => $this->calculateTotalPages(),
+            'page'=> $this->currentPage,
+            'perPage' => $this->itemsPerPage,
         ];
     }
 
