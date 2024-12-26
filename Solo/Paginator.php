@@ -16,18 +16,17 @@ final class Paginator
     public static function paginate(
         array  $queryParams,
         int    $totalItems,
-        ?array $allowedPerPage = null,
-        ?int $currentPage = null,
-        ?int $currentPerPage = null,
-    ): PaginationResult {
-        $perPageOptions = !empty($allowedPerPage) ? $allowedPerPage : self::DEFAULT_PER_PAGE_OPTIONS;
-        
-        $perPage = $currentPerPage ?? (int)($queryParams['per_page'] ?? self::DEFAULT_PER_PAGE);
+        ?array $allowedPerPageOptions = null
+    ): PaginationResult
+    {
+        $perPageOptions = empty($perPageOptions) ? self::DEFAULT_PER_PAGE_OPTIONS : $perPageOptions;
+
+        $perPage = (int)($queryParams['per_page'] ?? self::DEFAULT_PER_PAGE);
         if (!in_array($perPage, $perPageOptions)) {
             $perPage = self::DEFAULT_PER_PAGE;
         }
 
-        $page = $currentPage ?? (int)($queryParams['page'] ?? self::DEFAULT_PAGE);
+        $page = (int)($queryParams['page'] ?? self::DEFAULT_PAGE);
         $totalPages = (int)ceil($totalItems / $perPage);
         $currentPage = min(max(1, $page), $totalPages);
 
@@ -48,7 +47,8 @@ final class Paginator
         array $queryParams,
         int   $currentPerPage,
         array $perPageOptions
-    ): array {
+    ): array
+    {
         return array_map(
             fn(int $value) => new PerPageOption(
                 value: $value,
@@ -77,7 +77,8 @@ final class Paginator
         array $queryParams,
         int   $currentPage,
         int   $totalPages,
-    ): array {
+    ): array
+    {
         if ($totalPages <= self::MIN_LINKS) {
             return self::createSequentialLinks($queryParams, 1, $totalPages, $currentPage);
         }
@@ -89,7 +90,8 @@ final class Paginator
         array $queryParams,
         int   $currentPage,
         int   $totalPages,
-    ): array {
+    ): array
+    {
         $links = [];
         $start = max(1, $currentPage - 1);
         $end = min($totalPages, $start + self::MIN_LINKS - 1);
@@ -118,7 +120,8 @@ final class Paginator
         int   $start,
         int   $end,
         int   $currentPage,
-    ): array {
+    ): array
+    {
         $links = [];
         for ($page = $start; $page <= $end; $page++) {
             $links[] = self::createLink($queryParams, $page, $currentPage);
@@ -130,7 +133,8 @@ final class Paginator
         array $queryParams,
         int   $page,
         int   $currentPage,
-    ): PaginationLink {
+    ): PaginationLink
+    {
         return new PaginationLink(
             page: $page,
             url: self::buildPageUrl($queryParams, $page),
@@ -152,7 +156,8 @@ final class Paginator
         array $queryParams,
         int   $currentPage,
         int   $totalPages
-    ): ?string {
+    ): ?string
+    {
         if ($currentPage >= $totalPages) {
             return null;
         }
@@ -163,7 +168,8 @@ final class Paginator
     private static function getPreviousPageUrl(
         array $queryParams,
         int   $currentPage
-    ): ?string {
+    ): ?string
+    {
         if ($currentPage <= 1) {
             return null;
         }
