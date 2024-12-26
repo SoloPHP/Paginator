@@ -19,7 +19,7 @@ final class Paginator
         ?array $allowedPerPageOptions = null
     ): PaginationResult
     {
-        $perPageOptions = empty($perPageOptions) ? self::DEFAULT_PER_PAGE_OPTIONS : $perPageOptions;
+        $perPageOptions = $allowedPerPageOptions ?? self::DEFAULT_PER_PAGE_OPTIONS;
 
         $perPage = (int)($queryParams['per_page'] ?? self::DEFAULT_PER_PAGE);
         if (!in_array($perPage, $perPageOptions)) {
