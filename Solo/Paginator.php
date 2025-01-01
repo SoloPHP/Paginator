@@ -21,7 +21,7 @@ final class Paginator
     {
         $perPageOptions = $allowedPerPageOptions ?? self::DEFAULT_PER_PAGE_OPTIONS;
 
-        $perPage = (int)($queryParams['per_page'] ?? self::DEFAULT_PER_PAGE);
+        $perPage = (int)($queryParams['per-page'] ?? self::DEFAULT_PER_PAGE);
         if (!in_array($perPage, $perPageOptions)) {
             $perPage = self::DEFAULT_PER_PAGE;
         }

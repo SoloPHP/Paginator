@@ -149,7 +149,7 @@ Navigation links:
 
 The paginator uses the following query parameters:
 - `page`: Current page number
-- `per_page`: Number of items per page
+- `per-page`: Number of items per page
 
 All other query parameters in the URL are preserved.
 
