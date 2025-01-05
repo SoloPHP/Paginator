@@ -4,65 +4,65 @@ namespace Solo;
 
 use Solo\Paginator\PaginationLink;
 use Solo\Paginator\PaginationResult;
-use Solo\Paginator\PerPageOption;
+use Solo\Paginator\LimitOption;
 
 final class Paginator
 {
     private const DEFAULT_PAGE = 1;
-    private const DEFAULT_PER_PAGE = 25;
+    private const DEFAULT_LIMIT = 25;
     private const MIN_LINKS = 3;
-    private const DEFAULT_PER_PAGE_OPTIONS = [10, 25, 50, 100];
+    private const DEFAULT_LIMIT_OPTIONS = [10, 25, 50, 100];
 
     public static function paginate(
         array  $queryParams,
         int    $totalItems,
-        ?array $allowedPerPageOptions = null
+        ?array $allowedLimitOptions = null
     ): PaginationResult
     {
-        $perPageOptions = $allowedPerPageOptions ?? self::DEFAULT_PER_PAGE_OPTIONS;
+        $limitOptions = $allowedLimitOptions ?? self::DEFAULT_LIMIT_OPTIONS;
 
-        $perPage = (int)($queryParams['per_page'] ?? self::DEFAULT_PER_PAGE);
-        if (!in_array($perPage, $perPageOptions)) {
-            $perPage = self::DEFAULT_PER_PAGE;
+        $limit = (int)($queryParams['limit'] ?? self::DEFAULT_LIMIT);
+        if (!in_array($limit, $limitOptions)) {
+            $limit = self::DEFAULT_LIMIT;
         }
 
         $page = (int)($queryParams['page'] ?? self::DEFAULT_PAGE);
-        $totalPages = (int)ceil($totalItems / $perPage);
+        $totalPages = (int)ceil($totalItems / $limit);
         $currentPage = min(max(1, $page), $totalPages);
 
         return new PaginationResult(
             page: $currentPage,
-            perPage: $perPage,
+            limit: $limit,
             totalPages: $totalPages,
             links: self::createPaginationLinks($queryParams, $currentPage, $totalPages),
             nextPageUrl: self::getNextPageUrl($queryParams, $currentPage, $totalPages),
             previousPageUrl: self::getPreviousPageUrl($queryParams, $currentPage),
             hasNextPage: $currentPage < $totalPages,
             hasPreviousPage: $currentPage > 1,
-            perPageOptions: self::createPerPageOptions($queryParams, $perPage, $perPageOptions),
+            limitOptions: self::createLimitOptions($queryParams, $limit, $limitOptions),
         );
     }
 
-    private static function createPerPageOptions(
+    private static function createLimitOptions(
         array $queryParams,
-        int   $currentPerPage,
-        array $perPageOptions
+        int   $currentLimit,
+        array $limitOptions
     ): array
     {
         return array_map(
-            fn(int $value) => new PerPageOption(
+            fn(int $value) => new LimitOption(
                 value: $value,
-                url: self::buildPerPageUrl($queryParams, $value),
-                isCurrent: $value === $currentPerPage
+                url: self::buildLimitUrl($queryParams, $value),
+                isCurrent: $value === $currentLimit
             ),
-            $perPageOptions
+            $limitOptions
         );
     }
 
-    private static function buildPerPageUrl(array $queryParams, int $perPage): string
+    private static function buildLimitUrl(array $queryParams, int $limit): string
     {
         unset($queryParams['page']);
-        $queryParams['per_page'] = $perPage;
+        $queryParams['limit'] = $limit;
 
         return '?' . http_build_query($queryParams);
     }

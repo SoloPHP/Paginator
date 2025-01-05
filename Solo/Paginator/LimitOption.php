@@ -2,7 +2,7 @@
 
 namespace Solo\Paginator;
 
-readonly class PerPageOption
+readonly class LimitOption
 {
     public function __construct(
         public int    $value,
