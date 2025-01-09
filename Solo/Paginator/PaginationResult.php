@@ -8,6 +8,7 @@ readonly class PaginationResult
         public int     $page,
         public int     $limit,
         public int     $totalPages,
+        public int     $totalItems,
         public array   $links,
         public ?string $nextPageUrl,
         public ?string $previousPageUrl,

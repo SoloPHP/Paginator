@@ -34,6 +34,7 @@ final class Paginator
             page: $currentPage,
             limit: $limit,
             totalPages: $totalPages,
+            totalItems: $totalItems,
             links: self::createPaginationLinks($queryParams, $currentPage, $totalPages),
             nextPageUrl: self::getNextPageUrl($queryParams, $currentPage, $totalPages),
             previousPageUrl: self::getPreviousPageUrl($queryParams, $currentPage),

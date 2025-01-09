@@ -88,6 +88,7 @@ The `paginate()` method returns a `PaginationResult` object with the following p
 - `page`: Current page number
 - `limit`: Items per page limit
 - `totalPages`: Total number of pages
+- `totalItems`: Total number of items
 - `links`: Array of pagination links with url, page number and current state
 - `nextPageUrl`: URL for the next page
 - `previousPageUrl`: URL for the previous page
