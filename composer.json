@@ -1,8 +1,8 @@
 {
   "name": "solophp/paginator",
   "type": "library",
-  "description": "PHP Paginator",
-  "keywords": ["php","paginator"],
+  "description": "PHP pagination package",
+  "keywords": ["php", "paginator", "pagination", "psr-7"],
   "license": "MIT",
   "authors": [
     {
@@ -16,7 +16,7 @@
     }
   },
   "require": {
-    "php": ">=7.4"
+    "php": ">=8.2"
   },
   "minimum-stability": "dev",
   "prefer-stable": true

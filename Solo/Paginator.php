@@ -2,124 +2,136 @@
 
 namespace Solo;
 
-class Paginator
+use Solo\Paginator\PaginationLink;
+use Solo\Paginator\PaginationResult;
+use Solo\Paginator\LimitOption;
+
+final class Paginator
 {
-    /** @var int Total number of items */
-    private int $totalItems;
+    private const MIN_LINKS = 3;
+    public const DEFAULT_PAGE = 1;
+    public const DEFAULT_LIMIT = 25;
 
-    /** @var int Number of items per page */
-    private int $itemsPerPage;
-
-    /** @var int Current page number */
-    private int $currentPage;
-
-    /** @var int Max links in pagination */
-    private int $maxLinks;
-
-    /** @var array Query parameters for URL */
-    private array $queryParams;
-
-    public function get(
+    public static function paginate(
         array $queryParams,
-        int   $totalItems,
-        int   $currentPage = 1,
-        int   $itemsPerPage = 50,
-        int   $maxLinks = 3
-    ): array
+        int $totalItems,
+        array $limitOptions = [10, 25, 50, 100]
+    ): PaginationResult
     {
-        $this->queryParams = $queryParams;
-        $this->totalItems = $totalItems;
-        $this->currentPage = $currentPage;
-        $this->itemsPerPage = $itemsPerPage;
-        $this->maxLinks = max(3, $maxLinks);
+        $limit = self::getLimit($queryParams, $limitOptions);
+        $page = self::getPage($queryParams);
+        $totalPages = (int)ceil($totalItems / $limit);
+        $currentPage = min($page, $totalPages);
 
-        return [
-            'paginationLinks' => $this->generatePaginationLinks(),
-            'hasPreviousPage' => $this->hasPreviousPage(),
-            'hasNextPage' => $this->hasNextPage(),
-            'previousPageUrl' => $this->getPreviousPageUrl(),
-            'nextPageUrl' => $this->getNextPageUrl(),
-            'totalPages' => $this->calculateTotalPages(),
-            'page'=> $this->currentPage,
-            'perPage' => $this->itemsPerPage,
-        ];
+        return new PaginationResult(
+            page: $currentPage,
+            limit: $limit,
+            totalPages: $totalPages,
+            totalItems: $totalItems,
+            links: self::createPaginationLinks($queryParams, $currentPage, $totalPages, $limitOptions),
+            nextPageUrl: $currentPage < $totalPages ? self::buildUrl($queryParams, ['page' => $currentPage + 1]) : null,
+            previousPageUrl: $currentPage > 1 ? self::buildUrl($queryParams, ['page' => $currentPage - 1]) : null,
+            hasNextPage: $currentPage < $totalPages,
+            hasPreviousPage: $currentPage > 1,
+            limitOptions: array_map(
+                fn(int $opt) => new LimitOption(
+                    value: $opt,
+                    url: self::buildUrl($queryParams, ['limit' => $opt, 'page' => null]),
+                    isCurrent: $opt === $limit
+                ),
+                $limitOptions
+            )
+        );
     }
 
-    private function calculateTotalPages(): int
+    private static function getLimit(array $queryParams, array $limitOptions): int
     {
-        return (int)ceil($this->totalItems / $this->itemsPerPage);
+        $limit = (int)($queryParams['limit'] ?? self::DEFAULT_LIMIT);
+        return in_array($limit, $limitOptions, true)
+            ? $limit
+            : self::DEFAULT_LIMIT;
     }
 
-    private function getPageUrl(int $page): string
+    private static function getPage(array $queryParams): int
     {
-        $queryString = http_build_query(array_merge($this->queryParams, ['page' => $page]));
-        return '?' . $queryString;
+        return max(1, (int)($queryParams['page'] ?? self::DEFAULT_PAGE));
     }
 
-    private function generatePaginationLinks(): array
+    private static function buildUrl(array $queryParams, array $override = []): string
     {
-        $totalPages = $this->calculateTotalPages();
-        $currentPage = $this->currentPage;
-        $paginationLinks = [];
+        $merged = array_merge($queryParams, $override);
+        $filtered = [];
 
-        if ($totalPages <= $this->maxLinks) {
-            for ($i = 1; $i <= $totalPages; $i++) {
-                $paginationLinks[] = $this->createPaginationLink($i);
+        foreach ($merged as $key => $value) {
+            if ($value === null) {
+                continue;
             }
-            return $paginationLinks;
+
+            $filtered[$key] = $value;
         }
 
-        $halfMaxLinks = intdiv($this->maxLinks, 2);
-        $start = max(1, $currentPage - $halfMaxLinks);
-        $end = min($totalPages, $start + $this->maxLinks - 1);
+        return '?' . http_build_query($filtered);
+    }
+
+    private static function createPaginationLinks(array $queryParams, int $currentPage, int $totalPages, array $limitOptions): array
+    {
+        if ($totalPages <= self::MIN_LINKS) {
+            return self::createSequentialLinks($queryParams, 1, $totalPages, $currentPage, $limitOptions);
+        }
+
+        return self::createLinksWithEllipsis($queryParams, $currentPage, $totalPages, $limitOptions);
+    }
+
+    private static function createLinksWithEllipsis(array $queryParams, int $currentPage, int $totalPages, array $limitOptions): array
+    {
+        $links = [];
+        $start = max(1, $currentPage - 1);
+        $end = min($totalPages, $start + self::MIN_LINKS - 1);
 
         if ($start > 1) {
-            $paginationLinks[] = $this->createPaginationLink(1);
+            $links[] = self::createLink($queryParams, 1, $currentPage, $limitOptions);
             if ($start > 2) {
-                $paginationLinks[] = ['isEllipsis' => true];
+                $links[] = self::createEllipsisLink();
             }
         }
 
-        for ($i = $start; $i <= $end; $i++) {
-            $paginationLinks[] = $this->createPaginationLink($i);
-        }
+        $links = [...$links, ...self::createSequentialLinks($queryParams, $start, $end, $currentPage, $limitOptions)];
 
         if ($end < $totalPages) {
             if ($end < $totalPages - 1) {
-                $paginationLinks[] = ['isEllipsis' => true];
+                $links[] = self::createEllipsisLink();
             }
-            $paginationLinks[] = $this->createPaginationLink($totalPages);
+            $links[] = self::createLink($queryParams, $totalPages, $currentPage, $limitOptions);
         }
 
-        return $paginationLinks;
+        return $links;
     }
 
-    private function createPaginationLink(int $page): array
+    private static function createSequentialLinks(array $queryParams, int $start, int $end, int $currentPage, array $limitOptions): array
     {
-        return [
-            'page' => $page,
-            'url' => $this->getPageUrl($page),
-            'isCurrent' => ($page === $this->currentPage),
-        ];
+        $links = [];
+        for ($page = $start; $page <= $end; $page++) {
+            $links[] = self::createLink($queryParams, $page, $currentPage, $limitOptions);
+        }
+        return $links;
     }
 
-    private function hasPreviousPage(): bool
+    private static function createLink(array $queryParams, int $page, int $currentPage, array $limitOptions): PaginationLink
     {
-        return $this->currentPage > 1;
+        return new PaginationLink(
+            page: $page,
+            url: self::buildUrl($queryParams, ['page' => $page]),
+            isCurrent: $page === $currentPage,
+        );
     }
 
-    private function hasNextPage(): bool
+    private static function createEllipsisLink(): PaginationLink
     {
-        return $this->currentPage < $this->calculateTotalPages();
-    }
-
-    private function getPreviousPageUrl(): ?string
-    {
-        return $this->hasPreviousPage() ? $this->getPageUrl($this->currentPage - 1) : null;
-    }
-
-    private function getNextPageUrl(): ?string
-    {
-        return $this->hasNextPage() ? $this->getPageUrl($this->currentPage + 1) : null;
+        return new PaginationLink(
+            page: 0,
+            url: '',
+            isCurrent: false,
+            isEllipsis: true,
+        );
     }
 }
