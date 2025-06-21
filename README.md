@@ -1,6 +1,6 @@
 # PHP Paginator
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/solophp/paginator)
+[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](https://github.com/solophp/paginator)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 A lightweight, framework-agnostic pagination package for PHP 8.2+.

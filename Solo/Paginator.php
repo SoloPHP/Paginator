@@ -30,13 +30,16 @@ final class Paginator
             totalItems: $totalItems,
             links: self::createPaginationLinks($queryParams, $currentPage, $totalPages, $limitOptions),
             nextPageUrl: $currentPage < $totalPages ? self::buildUrl($queryParams, ['page' => $currentPage + 1]) : null,
-            previousPageUrl: $currentPage > 1 ? self::buildUrl($queryParams, ['page' => $currentPage - 1]) : null,
+            previousPageUrl: $currentPage > 1 ? self::buildUrl($queryParams, ['page' => $currentPage - 1 === 1 ? null : $currentPage - 1]) : null,
             hasNextPage: $currentPage < $totalPages,
             hasPreviousPage: $currentPage > 1,
             limitOptions: array_map(
                 fn(int $opt) => new LimitOption(
                     value: $opt,
-                    url: self::buildUrl($queryParams, ['limit' => $opt, 'page' => null]),
+                    url: self::buildUrl($queryParams, [
+                        'limit' => $opt === self::DEFAULT_LIMIT ? null : $opt,
+                        'page' => null
+                    ]),
                     isCurrent: $opt === $limit
                 ),
                 $limitOptions
@@ -118,9 +121,11 @@ final class Paginator
 
     private static function createLink(array $queryParams, int $page, int $currentPage, array $limitOptions): PaginationLink
     {
+        $pageOverride = $page === 1 ? ['page' => null] : ['page' => $page];
+
         return new PaginationLink(
             page: $page,
-            url: self::buildUrl($queryParams, ['page' => $page]),
+            url: self::buildUrl($queryParams, $pageOverride),
             isCurrent: $page === $currentPage,
         );
     }
