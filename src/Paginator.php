@@ -1,10 +1,8 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace Solo;
+declare(strict_types=1);
 
-use Solo\Paginator\PaginationLink;
-use Solo\Paginator\PaginationResult;
-use Solo\Paginator\LimitOption;
+namespace Solo\Paginator;
 
 final class Paginator
 {
@@ -16,11 +14,10 @@ final class Paginator
         array $queryParams,
         int $totalItems,
         array $limitOptions = [10, 25, 50, 100]
-    ): PaginationResult
-    {
+    ): PaginationResult {
         $limit = self::getLimit($queryParams, $limitOptions);
         $page = self::getPage($queryParams);
-        $totalPages = (int)ceil($totalItems / $limit);
+        $totalPages = (int) ceil($totalItems / $limit);
         $currentPage = min($page, $totalPages);
 
         return new PaginationResult(
@@ -29,12 +26,16 @@ final class Paginator
             totalPages: $totalPages,
             totalItems: $totalItems,
             links: self::createPaginationLinks($queryParams, $currentPage, $totalPages, $limitOptions),
-            nextPageUrl: $currentPage < $totalPages ? self::buildUrl($queryParams, ['page' => $currentPage + 1]) : null,
-            previousPageUrl: $currentPage > 1 ? self::buildUrl($queryParams, ['page' => $currentPage - 1 === 1 ? null : $currentPage - 1]) : null,
+            nextPageUrl: $currentPage < $totalPages
+                ? self::buildUrl($queryParams, ['page' => $currentPage + 1])
+                : null,
+            previousPageUrl: $currentPage > 1
+                ? self::buildUrl($queryParams, ['page' => $currentPage - 1 === 1 ? null : $currentPage - 1])
+                : null,
             hasNextPage: $currentPage < $totalPages,
             hasPreviousPage: $currentPage > 1,
             limitOptions: array_map(
-                fn(int $opt) => new LimitOption(
+                fn (int $opt) => new LimitOption(
                     value: $opt,
                     url: self::buildUrl($queryParams, [
                         'limit' => $opt === self::DEFAULT_LIMIT ? null : $opt,
@@ -49,7 +50,7 @@ final class Paginator
 
     private static function getLimit(array $queryParams, array $limitOptions): int
     {
-        $limit = (int)($queryParams['limit'] ?? self::DEFAULT_LIMIT);
+        $limit = (int) ($queryParams['limit'] ?? self::DEFAULT_LIMIT);
         return in_array($limit, $limitOptions, true)
             ? $limit
             : self::DEFAULT_LIMIT;
@@ -57,7 +58,7 @@ final class Paginator
 
     private static function getPage(array $queryParams): int
     {
-        return max(1, (int)($queryParams['page'] ?? self::DEFAULT_PAGE));
+        return max(1, (int) ($queryParams['page'] ?? self::DEFAULT_PAGE));
     }
 
     private static function buildUrl(array $queryParams, array $override = []): string
@@ -79,10 +80,21 @@ final class Paginator
     private static function createPaginationLinks(array $queryParams, int $currentPage, int $totalPages, array $limitOptions): array
     {
         if ($totalPages <= self::MIN_LINKS) {
-            return self::createSequentialLinks($queryParams, 1, $totalPages, $currentPage, $limitOptions);
+            return self::createSequentialLinks(
+                $queryParams,
+                1,
+                $totalPages,
+                $currentPage,
+                $limitOptions
+            );
         }
 
-        return self::createLinksWithEllipsis($queryParams, $currentPage, $totalPages, $limitOptions);
+        return self::createLinksWithEllipsis(
+            $queryParams,
+            $currentPage,
+            $totalPages,
+            $limitOptions
+        );
     }
 
     private static function createLinksWithEllipsis(array $queryParams, int $currentPage, int $totalPages, array $limitOptions): array
@@ -92,19 +104,38 @@ final class Paginator
         $end = min($totalPages, $start + self::MIN_LINKS - 1);
 
         if ($start > 1) {
-            $links[] = self::createLink($queryParams, 1, $currentPage, $limitOptions);
+            $links[] = self::createLink(
+                $queryParams,
+                1,
+                $currentPage,
+                $limitOptions
+            );
             if ($start > 2) {
                 $links[] = self::createEllipsisLink();
             }
         }
 
-        $links = [...$links, ...self::createSequentialLinks($queryParams, $start, $end, $currentPage, $limitOptions)];
+        $links = [
+            ...$links,
+            ...self::createSequentialLinks(
+                $queryParams,
+                $start,
+                $end,
+                $currentPage,
+                $limitOptions
+            )
+        ];
 
         if ($end < $totalPages) {
             if ($end < $totalPages - 1) {
                 $links[] = self::createEllipsisLink();
             }
-            $links[] = self::createLink($queryParams, $totalPages, $currentPage, $limitOptions);
+            $links[] = self::createLink(
+                $queryParams,
+                $totalPages,
+                $currentPage,
+                $limitOptions
+            );
         }
 
         return $links;
@@ -114,7 +145,12 @@ final class Paginator
     {
         $links = [];
         for ($page = $start; $page <= $end; $page++) {
-            $links[] = self::createLink($queryParams, $page, $currentPage, $limitOptions);
+            $links[] = self::createLink(
+                $queryParams,
+                $page,
+                $currentPage,
+                $limitOptions
+            );
         }
         return $links;
     }

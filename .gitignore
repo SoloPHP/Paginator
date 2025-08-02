@@ -1,7 +1,38 @@
-!.gitignore
-vendor
+# Composer
+/vendor/
 composer.lock
-example
-.idea
+
+# PHPUnit
+.phpunit.cache/
+.phpunit.result.cache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+/build/
+/dist/
+
+# Coverage reports
+/coverage/
+*.clover
+
+# Temporary files
+*.tmp
+*.temp

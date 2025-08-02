@@ -1,7 +1,8 @@
 # PHP Paginator
 
-[![Version](https://img.shields.io/badge/version-2.0.1-blue.svg)](https://github.com/solophp/paginator)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/solophp/paginator.svg)](https://packagist.org/packages/solophp/paginator)
+[![License](https://img.shields.io/packagist/l/solophp/paginator.svg)](https://opensource.org/licenses/MIT)
+[![PHP Version](https://img.shields.io/packagist/php-v/solophp/paginator.svg)](https://php.net)
 
 A lightweight, framework-agnostic pagination package for PHP 8.2+.
 
@@ -25,12 +26,14 @@ A lightweight, framework-agnostic pagination package for PHP 8.2+.
 You can install the package via composer:
 
 ```bash
-composer require solo/paginator
+composer require solophp/paginator
 ```
 
 ## Usage
 
 ```php
+use Solo\Paginator\Paginator;
+
 public static function paginate(
     array $queryParams,
     int $totalItems,
@@ -46,7 +49,7 @@ Parameters:
 Basic usage:
 
 ```php
-use Solo\Paginator;
+use Solo\Paginator\Paginator;
 
 class ProductsController
 {
@@ -147,9 +150,29 @@ Navigation links:
 
 The paginator uses the following query parameters:
 - `page`: Current page number
-- `limit`: Number of items per page (previously `per_page`)
+- `limit`: Number of items per page
 
 All other query parameters in the URL are preserved.
+
+## Development
+
+### Running Tests
+
+```bash
+composer test
+```
+
+### Code Style
+
+Check code style:
+```bash
+composer cs
+```
+
+Fix code style:
+```bash
+composer cs-fix
+```
 
 ## License
 
