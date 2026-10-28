@@ -2,6 +2,7 @@
   "name": "solophp/paginator",
   "type": "library",
   "description": "PHP pagination package",
+  "abandoned": true,
   "keywords": ["php", "paginator", "pagination", "psr-7"],
   "license": "MIT",
   "authors": [
